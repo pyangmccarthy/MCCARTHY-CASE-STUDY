@@ -1,0 +1,6 @@
+# enter the hosts or device for ansible_playbooks
+ACCOUNTING ansible_host=192.168.0.1
+
+
+[routers]
+ACCOUNTING
