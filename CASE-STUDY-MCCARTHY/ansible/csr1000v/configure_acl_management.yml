@@ -1,0 +1,43 @@
+---
+  - name: Configure Standard ACL
+    hosts: MANAGEMENT
+    gather_facts: false
+    connection: local
+    vars:
+      cli:
+        username: cisco
+        password: cisco123!
+
+    tasks:
+      - name: Deny ACCOUNTING network
+        ios_config:
+          provider: "{{ cli }}"
+          parents: ip access-list extended ACL-MANAGEMENT
+          lines:
+            - 10 deny icmp 192.168.0.0 0.0.0.255 any
+            - 20 permit ip any any
+
+      - name: Apply in S0/1
+        ios_config:
+          provider: "{{ cli }}"
+          parents: interface s0/1
+          lines:
+            - ip access-group ACL-MANAGEMENT in
+
+      - name: Save Configuration
+        ios_config:
+          provider: "{{ cli }}"
+          lines:
+            - do write
+
+      - name: print ip route
+        ios_command:
+          provider: "{{ cli }}"
+          commands:
+            - show ip access-lists
+        register: config
+
+      - name: SAVE OUTPUT TO ./iosconfig/ 
+        copy:
+          content: "{{config.stdout[0]}}"
+          dest: "iosconfig/show_ip_accesslists{{inventory_hostname}}.txt"
